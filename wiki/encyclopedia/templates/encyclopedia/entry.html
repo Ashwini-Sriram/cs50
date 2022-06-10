@@ -1,0 +1,31 @@
+{% extends "encyclopedia/layout.html" %} {% block title %} {{entry}} {%endblock%} {% load markdown_module %}
+{% block nav %}
+<div>
+  <a href="{% url 'index' %}">Home</a>
+</div>
+
+<div>
+  <a href="{% url 'create' %}">Create New Page</a>
+</div>
+<div>
+  <a href="{% url 'entry' random %}">Random Page</a>
+</div>
+
+{% endblock %}  
+{% block body %} {% if value %}
+<div>
+  <h1>Search Results for {{ entry }}</h1>
+  <ul>
+    {% for item in mdfile %}
+    <li><a href="{% url 'entry' item %}">{{ item }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% else %}
+<div>
+  <p>{{ mdfile | markdown | safe }}</p>
+</div>
+<a href="{% url 'edit' entry %}">Edit</a>
+{% endif %}
+
+{% endblock %}
