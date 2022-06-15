@@ -1,0 +1,35 @@
+{% extends "auctions/layout.html" %} {% block title %} Listings {% endblock %}
+{% block body %}
+<h1></h1>
+
+<div>
+  <hr />
+  <h3>{{item.id}} . {{item.name}}</h3>
+  <img src="{{item.img_url}}" />
+  <p>{{item.desc}}</p>
+  <p>Starting Bid: Rs.{{item.starting_bid}}</p>
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'listings' list_id %}">
+    {% csrf_token %}
+    <input type="hidden" value="watchlist" name="form_n" />
+    <input type="hidden" value="{{user.id}}" name="user_id" />
+    <input type="hidden" value="{{item.id}}" name="item_id" />
+    {% if item in wishlist %}
+    <input type="submit" value="Remove from Watch List" name="act" />
+    {% else %}
+    <input type="submit" value="Add to Watch List" name="act" />
+
+    {% endif %}
+  </form>
+  
+  {% endif %}
+  <hr />
+</div>
+{% if user.is_authenticated %}
+<form method="post" action="{% url 'listings' list_id %}">
+  {% csrf_token %}
+  <input type="hidden" value="bid" name="form_n" />
+  <input type="number" name="bid_value" />
+  <input type="submit" value="Place bid" />
+</form>
+{% endif %} {% endblock %}

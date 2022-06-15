@@ -1,0 +1,22 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}
+Listings
+{% endblock %}
+{% block body %}
+<h1>Watchlist</h1>
+
+
+{% if user.is_authenticated %}
+<h1>{{user.username}}</h1>
+<ul>
+    {% for item in list %}
+   
+    <li>{{item}}</li>
+
+    {% endfor %}
+    
+</ul>
+
+{% endif %}
+{% endblock %}
