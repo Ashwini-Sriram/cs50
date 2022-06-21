@@ -1,0 +1,21 @@
+{% extends "auctions/layout.html" %} {% block title %} Categories {% endblock %}
+{% block body %}
+<h1>Results for {{category}}</h1>
+{% for  item in list_items %}
+ {% if not item.closed %}
+   <a href="{% url 'listings' item.id %}">
+    <div>
+        <hr>
+        <h3>{{item.id}} . {{item.name}}</h3>
+        <img src="{{item.img_url}}"  >
+        <p>{{item.desc}}</p>
+        <p>Starting Bid: Rs.{{item.starting_bid}}</p>
+        <hr>
+    </div>
+   </a> 
+    {% endif %}
+    {% endfor %}
+
+  
+
+{% endblock %}
