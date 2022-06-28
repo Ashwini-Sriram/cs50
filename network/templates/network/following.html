@@ -1,0 +1,16 @@
+{% extends "network/layout.html" %} {% block body %} 
+<h1>All Posts </h1>
+
+{% for post in posts %}
+<div  style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
+ <a href="{% url 'profile' post.user.id %}">
+<h5>{{ post.user }}</h5>
+ </a>
+ <div>
+    <p>{{ post.post }}</p>
+    <p>{{ post.likes }}</p>
+    <p style="color: #b1b1cd">{{ post.date_time }}</p>
+ </div>
+</div>
+{% endfor %}
+{% endblock %}

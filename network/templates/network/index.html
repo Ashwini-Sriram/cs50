@@ -1,0 +1,28 @@
+{% extends "network/layout.html" %} {% block body %} 
+<h1>All Posts </h1>
+{% if user.is_authenticated%} 
+<div class="form-group" style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
+  NEW POST
+<div class="form-group" >
+    <form method="post"  action="{% url 'index' %}">
+         {% csrf_token %}
+         <textarea name ="post_content" class="form-control" rows="4" cols="50" ></textarea>
+         <input type="submit" class="btn btn-primary" style="margin-top: 5px;" value="POST">
+    </form>
+</div>
+</div>
+
+{% endif %}
+{% for post in posts %}
+<div  style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
+ <a href="{% url 'profile' post.user.id %}">
+<h5>{{ post.user }}</h5>
+ </a>
+ <div>
+    <p>{{ post.post }}</p>
+    <p>{{ post.likes }}</p>
+    <p style="color: #b1b1cd">{{ post.date_time }}</p>
+ </div>
+</div>
+{% endfor %}
+{% endblock %}

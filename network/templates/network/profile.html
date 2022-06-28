@@ -1,0 +1,34 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+
+    <h1>{{poster.username}}'s Profile</h1>
+<div>
+    <p style="float: left; margin-right: 10px;">Followers : {{poster.followers_count}}</p><p>Following : {{poster.following_count}}</p>
+    {% if  user.id != poster.id %}
+    <form method="post" action="{% url 'profile' poster.id %}">
+        {% csrf_token %}
+        {% if user in followers %}
+    <input type="submit"  class="btn btn-primary" value="Unfollow" name="perform" style="font-size: smaller;"/>
+    {% else %}
+    <input type="submit" class="btn btn-primary" value="Follow" name="perform"  style="font-size: smaller;"/>
+    {% endif %}
+   
+    </form>
+    {% endif %}
+</div>
+{% for post in posts %}
+<div  style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
+ <a href="{% url 'profile' post.user.id %}">
+<h5>{{ post.user }}</h5>
+ </a>
+ <div>
+    <p>{{ post.post }}</p>
+    <p>{{ post.likes }}</p>
+    <p style="color: #b1b1cd">{{ post.date_time }}</p>
+ </div>
+</div>
+{% endfor %}
+   
+
+{% endblock %}
