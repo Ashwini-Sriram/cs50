@@ -1,14 +1,18 @@
+import json
 from genericpath import exists
 from django.contrib.auth import authenticate, login, logout
 from datetime import datetime
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
-from .models import User,Posts, Followers
-
+from django.core.paginator import Paginator
+from requests import request
+from .models import Likedposts, User,Posts, Followers
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 def index(request):
     if request.method == "POST":
@@ -18,8 +22,25 @@ def index(request):
         pst.date_time = datetime.now()
         pst.save()
         return HttpResponseRedirect(reverse("index"))
-    all_posts = Posts.objects.all().order_by('-date_time')
-    return render(request, "network/index.html",{"posts":all_posts})
+    if request.user.is_authenticated:
+        user = User.objects.get(pk=request.user.id)
+        liked_posts = user.liked_posts.all()
+        liked_l = []
+        for liked_post in liked_posts:
+          liked_l.append(getattr(liked_post, "post_liked"))
+        all_posts = Posts.objects.all().order_by('-date_time')
+        paginator = Paginator(all_posts, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, "network/index.html", {"posts": page_obj, "liked": liked_l})
+    else:
+        all_posts = Posts.objects.all().order_by('-date_time')
+        paginator = Paginator(all_posts, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return render(request, "network/index.html", {"posts": page_obj})
+
+    
 
 
 def login_view(request):
@@ -97,8 +118,11 @@ def profile(request,user_id):
     followers_l=[]
     for follower in followers_list:
        followers_l.append(getattr(follower,"followed_user"))
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     
-    return render(request, "network/profile.html",{"poster":user,"posts":posts,"followers":followers_l})
+    return render(request, "network/profile.html",{"poster":user,"posts":page_obj,"followers":followers_l})
 
 
 def following(request):
@@ -108,6 +132,53 @@ def following(request):
     for follower in following_list:
       f_id= getattr(follower, "user_id").id
       following_l.append(f_id)
+    
+
 
     all_posts = Posts.objects.filter(user__in=following_l).order_by('-date_time')
-    return render(request, "network/following.html", {"posts": all_posts})
+    paginator = Paginator(all_posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, "network/index.html", {"posts": page_obj})
+
+
+
+#API functions
+
+
+@csrf_exempt
+@login_required
+def edit(request,post_id):
+    try:
+        post_obj = Posts.objects.get(pk=post_id)
+    except Posts.DoesNotExist:
+        return JsonResponse({"error": "Email not found."}, status=404)
+    if request.method=="PUT":
+        data = json.loads(request.body)
+        post_obj.post=data['post']
+        post_obj.save()
+        return JsonResponse(post_obj.post, safe=False)
+
+        #return JsonResponse(post_obj.serialize(),safe=False)
+
+
+@csrf_exempt
+@login_required
+def like(request, post_id):
+    try:
+        post_obj = Posts.objects.get(pk=post_id)
+    except Posts.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        if data["like"]==True:
+            Likedposts.objects.create(user_liked=request.user,post_liked=post_obj)
+            post_obj.likes += 1
+        elif post_obj.likes>0:
+            Likedposts.objects.filter(Q(user_liked=request.user.id) & Q(
+                post_liked=post_id)).delete()
+            post_obj.likes -= 1
+        post_obj.save()
+        return JsonResponse(post_obj.likes, safe=False)
+
+   

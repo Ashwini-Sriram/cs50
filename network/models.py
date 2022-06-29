@@ -23,3 +23,10 @@ class Followers(models.Model):
         User, on_delete=models.CASCADE, related_name="followers")
 
   
+class Likedposts(models.Model):
+    class Meta:
+        unique_together = (('user_liked', 'post_liked'),)
+    user_liked = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="liked_posts")
+    post_liked = models.ForeignKey(
+        Posts, on_delete=models.CASCADE, related_name="liked_by")

@@ -1,4 +1,5 @@
 {% extends "network/layout.html" %} {% block body %} 
+{% load static %}
 <h1>All Posts </h1>
 {% if user.is_authenticated%} 
 <div class="form-group" style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
@@ -6,23 +7,74 @@
 <div class="form-group" >
     <form method="post"  action="{% url 'index' %}">
          {% csrf_token %}
-         <textarea name ="post_content" class="form-control" rows="4" cols="50" ></textarea>
+         <textarea name ="post_content" class="form-control" rows="4" cols="50"  required></textarea>
          <input type="submit" class="btn btn-primary" style="margin-top: 5px;" value="POST">
     </form>
 </div>
 </div>
-
 {% endif %}
 {% for post in posts %}
-<div  style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
- <a href="{% url 'profile' post.user.id %}">
+<div id="postview_{{ post.id }}" style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px;">
+ <a style="text-decoration: none; color: black;" href="{% url 'profile' post.user.id %}">
 <h5>{{ post.user }}</h5>
  </a>
  <div>
-    <p>{{ post.post }}</p>
-    <p>{{ post.likes }}</p>
+    {% if user.is_authenticated and user == post.user %}
+    <input onclick="edit_post('{{ post.id }}')" type="button" value="Edit" style="background-color:white; color:#007bff; border:none">
+    
+    {% endif %}
+    <p id="post_{{ post.id }}">{{ post.post }}</p>
+    {% if user.is_authenticated  %}
+     {% if post in liked %}
+        <div class="heart-like-button liked" id="liked_{{ post.id }}" onclick="like('{{ post.id }}')"></div>
+    {% else %}
+        <div class="heart-like-button" id="liked_{{ post.id }}" onclick="like('{{ post.id }}')"></div>
+    {% endif %}
+    {% endif %}
+    <br>
+    <p id="likedno_{{ post.id }}" style="float: left;">{{ post.likes }}</p><p style="color: #b1b1cd">liked</p>
     <p style="color: #b1b1cd">{{ post.date_time }}</p>
  </div>
 </div>
+<div id="editview_{{ post.id }}"  class="form-group" style="border: solid thin #ced4da; border-radius: 15px; padding: 10px; margin: 10px; display: none;">
+  Edit Post
+<div class="form-group" >
+    
+         <textarea id="textarea_{{ post.id }}" name ="post_content" class="form-control" rows="4" cols="50"  required></textarea>
+         <input type="submit" class="btn btn-primary" style="margin-top: 5px;"onclick="save_post('{{ post.id }}')" value="SAVE">
+    
+</div>
+</div>
 {% endfor %}
+
+
+ <!--Pagination-->
+      <div class="container p-4">
+        <div class="pagination justify-content-center">
+            <span class="step-links">
+              {% if posts.has_previous %}
+                  <a href="?page=1">&laquo; first</a>
+                  <a href="?page={{ posts.previous_page_number }}">previous</a>
+              {% endif %}
+
+                <span class="current">
+                    Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+                </span>
+
+              {% if posts.has_next %}
+                  <a href="?page={{ posts.next_page_number }}">next</a>
+                  <a href="?page={{ posts.paginator.num_pages }}">last &raquo;</a>
+              {% endif %}
+            </span>
+            </div>
+        </div>
+ <!--end of Pagination-->
+
 {% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/script.js' %}"></script>
+{% endblock %}
+ 
+
+ 
